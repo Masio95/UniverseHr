@@ -1,0 +1,364 @@
+<section class="page">
+
+  <!-- ================= Header ================= -->
+
+  <div class="page-header">
+
+    <div>
+
+      <h1>Recruiter Dashboard</h1>
+
+      <p>
+        Find pre-vetted candidates, review AI insights and shortlist top talent.
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- ================= Search Panel ================= -->
+
+  <div class="panel">
+
+    <h2>🔍 Smart Candidate Search</h2>
+
+    <p class="subtitle">
+
+      Filter candidates by role, industry, experience and verified scores.
+
+    </p>
+
+    <div class="filter-grid">
+
+      <div
+        class="field"
+        *ngFor="let filter of filters">
+
+        <label>{{filter.label}}</label>
+
+        <select [(ngModel)]="filter.value">
+
+          <option value="">
+            Select {{filter.label}}
+          </option>
+
+          <option
+            *ngFor="let option of filter.options"
+            [value]="option">
+
+            {{option}}
+
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+    <h3 class="score-title">
+
+      Verified Scores
+
+    </h3>
+
+    <div class="score-grid">
+
+      <div
+        class="field"
+        *ngFor="let score of scoreFilters">
+
+        <label>
+
+          {{score.label}} >
+
+        </label>
+
+        <input
+          type="number"
+          min="0"
+          max="100"
+          [(ngModel)]="score.value">
+
+      </div>
+
+    </div>
+
+    <div class="actions">
+
+      <button
+        class="secondary"
+        (click)="reset()">
+
+        Reset
+
+      </button>
+
+      <button
+        class="primary"
+        (click)="search()">
+
+        Search
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- ================= Shortlisted Candidates ================= -->
+
+  <div class="panel">
+
+    <div class="section-header">
+
+      <h2>⭐ Shortlisted Candidates</h2>
+
+      <span>
+
+        {{candidates.length}} Candidate(s)
+
+      </span>
+
+    </div>
+
+    <div
+      class="candidate-card"
+      *ngFor="let candidate of candidates"
+      (click)="viewProfile(candidate)">
+
+      <div class="candidate-info">
+
+        <div class="avatar">
+
+          {{candidate.name.charAt(0)}}
+
+        </div>
+
+        <div>
+
+          <h3>
+
+            {{candidate.name}}
+
+          </h3>
+
+          <p>
+
+            {{candidate.role}}
+
+          </p>
+
+          <small>
+
+            {{candidate.industry}}
+            •
+            {{candidate.country}}
+            •
+            {{candidate.experience}}
+
+          </small>
+
+        </div>
+
+      </div>
+
+      <div class="score-badge">
+
+        {{candidate.overallScore}}
+
+      </div>
+
+    </div>
+
+  </div>
+    <!-- ================= Candidate Profile ================= -->
+
+  <div class="panel" *ngIf="selectedCandidate">
+
+    <div class="profile-header">
+
+      <div class="avatar large">
+
+        {{ selectedCandidate.name.charAt(0) }}
+
+      </div>
+
+      <div class="profile-info">
+
+        <h2>{{ selectedCandidate.name }}</h2>
+
+        <p>{{ selectedCandidate.role }}</p>
+
+        <span class="overall-score">
+
+          ⭐ Overall Score:
+          {{ selectedCandidate.overallScore }}
+
+        </span>
+
+      </div>
+
+    </div>
+
+    <hr>
+
+    <!-- ================= Verified Skills ================= -->
+
+    <h3>Verified Skill Scores</h3>
+
+    <div class="skills">
+
+      <div
+        class="skill"
+        *ngFor="let skill of selectedCandidate.verifiedSkills">
+
+        <div class="skill-header">
+
+          <span>{{ skill.name }}</span>
+
+          <strong>{{ skill.score }}%</strong>
+
+        </div>
+
+        <div class="progress">
+
+          <div
+            class="progress-fill"
+            [style.width.%]="skill.score">
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <hr>
+
+    <!-- ================= AI Summary ================= -->
+
+    <h3>🤖 AI Summary</h3>
+
+    <div class="summary-card">
+
+      <p>
+
+        {{ selectedCandidate.aiSummary }}
+
+      </p>
+
+    </div>
+
+    <hr>
+
+    <!-- ================= Parsed CV ================= -->
+
+    <h3>📄 Parsed CV</h3>
+
+    <div class="cv-grid">
+
+      <div class="cv-item">
+
+        <span>Education</span>
+
+        <strong>
+
+          {{ selectedCandidate.parsedCv.education }}
+
+        </strong>
+
+      </div>
+
+      <div class="cv-item">
+
+        <span>Experience</span>
+
+        <strong>
+
+          {{ selectedCandidate.parsedCv.experience }}
+
+        </strong>
+
+      </div>
+
+      <div class="cv-item full-width">
+
+        <span>Skills</span>
+
+        <strong>
+
+          {{ selectedCandidate.parsedCv.skills.join(', ') }}
+
+        </strong>
+
+      </div>
+
+    </div>
+
+    <hr>
+
+    <!-- ================= Interview ================= -->
+
+    <h3>🎥 Interview Recording</h3>
+
+    <video controls>
+
+      <source
+        [src]="selectedCandidate.interviewRecording"
+        type="video/mp4">
+
+      Your browser does not support HTML5 video.
+
+    </video>
+
+  </div>
+
+  <!-- ================= Shortlisting ================= -->
+
+  <div class="panel">
+
+    <h2>📌 Shortlisting</h2>
+
+    <p class="subtitle">
+
+      Keep track of candidates who are ready for interviews or the next stage.
+
+    </p>
+
+    <div class="shortlist-info">
+
+      <div class="shortlist-box">
+
+        <h3>{{ candidates.length }}</h3>
+
+        <span>Visible Candidates</span>
+
+      </div>
+
+      <div class="shortlist-box">
+
+        <h3>
+
+          {{ selectedCandidate?.overallScore || '-' }}
+
+        </h3>
+
+        <span>Selected Score</span>
+
+      </div>
+
+      <div class="shortlist-box">
+
+        <h3>Ready</h3>
+
+        <span>Interview Status</span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
