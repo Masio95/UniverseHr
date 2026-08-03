@@ -1,0 +1,384 @@
+<section class="page">
+
+  <!-- Hero Header -->
+
+  <div class="hero">
+
+    <div>
+
+      <span class="tag">
+        Corporate Internal Appraisal Portal
+      </span>
+
+      <h1>Employee Assessment Hub</h1>
+
+      <p>
+        Assign assessments, identify organizational skill gaps,
+        and monitor employee development to support internal
+        performance appraisals.
+      </p>
+
+    </div>
+
+    <button
+      class="assign-btn"
+      (click)="openAssignModal()">
+
+      + Assign Assessment
+
+    </button>
+
+  </div>
+
+  <!-- KPI Cards -->
+
+  <div class="stats">
+
+    <div class="card">
+
+      <span>Total Employees</span>
+
+      <h2>{{ totalEmployees }}</h2>
+
+      <small>Across all departments</small>
+
+    </div>
+
+    <div class="card">
+
+      <span>Active Assessments</span>
+
+      <h2>{{ activeAssessments }}</h2>
+
+      <small>Currently in progress</small>
+
+    </div>
+
+    <div class="card">
+
+      <span>Completed</span>
+
+      <h2>{{ completedAssessments }}</h2>
+
+      <small>{{ completedPercentage }}% completion</small>
+
+    </div>
+
+    <div class="card">
+
+      <span>Average Progress</span>
+
+      <h2>{{ averageProgress }}%</h2>
+
+      <small>Organization wide</small>
+
+    </div>
+
+  </div>
+
+  <!-- Filters -->
+
+  <div class="filters">
+
+    <input
+      type="text"
+      placeholder="Search employee..."
+      [(ngModel)]="search">
+
+    <select
+      [(ngModel)]="selectedDepartment">
+
+      <option
+        *ngFor="let department of departments"
+        [value]="department">
+
+        {{ department }}
+
+      </option>
+
+    </select>
+
+    <select
+      [(ngModel)]="selectedStatus">
+
+      <option
+        *ngFor="let status of statuses"
+        [value]="status">
+
+        {{ status }}
+
+      </option>
+
+    </select>
+
+  </div>
+
+  <!-- Employee Table -->
+
+  <div class="table-container">
+
+    <table>
+
+      <thead>
+
+      <tr>
+
+        <th>Employee</th>
+
+        <th>Department</th>
+
+        <th>Assessment</th>
+
+        <th>Status</th>
+
+        <th>Progress</th>
+
+        <th>Skill Gap</th>
+
+        <th>Actions</th>
+
+      </tr>
+
+      </thead>
+
+      <tbody>
+
+      <tr *ngFor="let employee of filteredEmployees">
+
+        <td>
+
+          <div class="employee">
+
+            <div class="avatar">
+
+              {{ employee.name.charAt(0) }}
+
+            </div>
+
+            <div>
+
+              <strong>{{ employee.name }}</strong>
+
+              <div class="sub-text">
+
+                Employee #{{ employee.id }}
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </td>
+
+        <td>{{ employee.department }}</td>
+
+        <td>{{ employee.assessment }}</td>
+
+        <td>
+
+          <span
+            class="status"
+            [ngClass]="{
+
+              completed: employee.status === 'Completed',
+
+              progress: employee.status === 'In Progress',
+
+              pending: employee.status === 'Not Started'
+
+            }">
+
+            {{ employee.status }}
+
+          </span>
+
+        </td>
+
+        <td>
+
+          <div class="progress-wrapper">
+
+            <div class="progress-bar">
+
+              <div
+                class="progress-fill"
+                [style.width.%]="employee.progress">
+
+              </div>
+
+            </div>
+
+            <span>{{ employee.progress }}%</span>
+
+          </div>
+
+        </td>
+
+        <td>
+
+          {{ employee.skillGap }}
+
+        </td>
+
+        <td class="actions">
+
+          <button
+            class="secondary"
+            (click)="viewDetails(employee)">
+
+            View
+
+          </button>
+
+          <button
+            class="primary"
+            (click)="openAssignModal(employee)">
+
+            Assign
+
+          </button>
+
+        </td>
+
+      </tr>
+
+      </tbody>
+
+    </table>
+
+    <div
+      class="empty"
+      *ngIf="filteredEmployees.length === 0">
+
+      No employees found.
+
+    </div>
+
+  </div>
+    <!-- Skill Gap Summary -->
+
+  <div class="skill-gap-section">
+
+    <div class="section-header">
+
+      <h3>Organizational Skill Gap Summary</h3>
+
+      <span>{{ skillGaps.length }} Skills Tracked</span>
+
+    </div>
+
+    <p class="section-description">
+      Identify the most common skill gaps across departments to help HR teams
+      prioritize learning and development initiatives.
+    </p>
+
+    <div
+      class="skill-item"
+      *ngFor="let skill of skillGaps">
+
+      <div class="skill-header">
+
+        <span>{{ skill.skill }}</span>
+
+        <strong>{{ skill.employees }} Employees</strong>
+
+      </div>
+
+      <div class="skill-bar">
+
+        <div
+          class="skill-fill"
+          [style.width.%]="getBarWidth(skill.employees)">
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Assign Assessment Modal -->
+
+  <div
+    class="modal-overlay"
+    *ngIf="showAssignModal">
+
+    <div class="modal">
+
+      <div class="modal-header">
+
+        <h3>Assign Assessment</h3>
+
+        <button
+          class="close-btn"
+          (click)="closeAssignModal()">
+          ✕
+        </button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <div class="field">
+
+          <label>Employee</label>
+
+          <input
+            type="text"
+            [value]="selectedEmployee?.name || 'New Assignment'"
+            readonly>
+
+        </div>
+
+        <div class="field">
+
+          <label>Assessment</label>
+
+          <select>
+
+            <option>Angular Fundamentals</option>
+            <option>Leadership Essentials</option>
+            <option>Advanced Excel</option>
+            <option>Power BI Basics</option>
+            <option>Digital Marketing</option>
+
+          </select>
+
+        </div>
+
+        <div class="field">
+
+          <label>Due Date</label>
+
+          <input type="date">
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button
+          class="secondary"
+          (click)="closeAssignModal()">
+
+          Cancel
+
+        </button>
+
+        <button
+          class="primary"
+          (click)="assignAssessment()">
+
+          Assign Assessment
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
