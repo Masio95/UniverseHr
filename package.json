@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "ng serve",
-    "build": "ng build"
+    "build": "ng build",
+    "deploy": "ng build --output-path=docs --base-href=UniverseHr && cp docs/index.html docs/404.html"
   },
   "dependencies": {
     "@angular/animations": "^17.0.0",
