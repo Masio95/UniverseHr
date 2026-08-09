@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-candidate-profile',
@@ -124,6 +124,31 @@ import { RouterLink } from '@angular/router';
   ]
 })
 export class CandidateProfileComponent {
+  selectedCandidate: any = {
+    name: 'Amira El-Sayed',
+    role: 'Production Manager',
+    overallScore: 82,
+    aiSummary: 'Experienced Production Manager with strong skills in manufacturing operations and candidate readiness.',
+    parsedCv: {
+      education: 'B.Sc. Agriculture',
+      experience: '8 Years',
+      skills: ['Leadership', 'Planning', 'Quality Control']
+    },
+    verifiedSkills: [
+      { name: 'Leadership', score: 90 },
+      { name: 'Communication', score: 84 },
+      { name: 'Problem Solving', score: 88 },
+      { name: 'Technical Knowledge', score: 86 }
+    ]
+  };
+
+  constructor(private router: Router) {
+    const navigationCandidate = this.router.getCurrentNavigation()?.extras.state?.['candidate'];
+    if (navigationCandidate) {
+      this.selectedCandidate = navigationCandidate;
+    }
+  }
+
   parsedSkills = [
     {
       name: 'Operational Excellence',

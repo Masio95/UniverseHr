@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-assessment-page',
   standalone: true,
+  imports: [CommonModule],
   template: `
     <section class="page">
       <header class="hero">
