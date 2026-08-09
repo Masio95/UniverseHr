@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { HomePageComponent } from './pages/home-page/home-page.component';
 import { CandidatePageComponent } from './features/candidate/candidate-page.component';
+import { CandidateProfileComponent } from './features/candidate-profile/candidate-profile.component';
 import { RecruiterPageComponent } from './features/recruiter/recruiter-page.component';
 import { CompanyPageComponent } from './features/company/company-page.component';
 import { JobsPageComponent } from './features/jobs/jobs-page.component';
@@ -10,6 +11,7 @@ import { InterviewPageComponent } from './features/interviews/interview-page.com
 export const routes: Routes = [
   { path: '', component: HomePageComponent },
   { path: 'candidate', component: CandidatePageComponent },
+  { path: 'candidate/profile', component: CandidateProfileComponent },
   { path: 'recruiter', component: RecruiterPageComponent },
   { path: 'company', component: CompanyPageComponent },
   { path: 'jobs', component: JobsPageComponent },

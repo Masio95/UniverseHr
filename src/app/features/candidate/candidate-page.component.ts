@@ -1,91 +1,188 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-candidate-page',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <section class="page">
-      <h2>Candidate Workspace</h2>
-      <p>Upload your CV to extract Job History, Skills, Certifications, Education and Languages.</p>
-
-      <div class="uploader">
-        <div class="dropzone" [class.dragging]="isDragging"
-             (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
-          <p *ngIf="!fileName">Drag & drop a PDF/DOCX here, or <label class="browse">browse<input type="file" accept=".pdf,.doc,.docx" (change)="onFileChange($event)"/></label></p>
-          <p *ngIf="fileName"><strong>Selected:</strong> {{fileName}}</p>
-        </div>
-
-        <div class="actions">
-          <button (click)="clear()" [disabled]="!fileName">Clear</button>
-        </div>
-
-        <div class="extract" *ngIf="extracting">Extracting data…</div>
-
-        <div class="result" *ngIf="extractedData">
-          <h3>Extracted data (simulated)</h3>
-          <div class="panel">
-            <h4>Job History</h4>
-            <ul>
-              <li *ngFor="let j of extractedData.jobHistory">{{j.title}} — {{j.company}} ({{j.years}})</li>
-            </ul>
-          </div>
-
-            <div class="panel">
-              <h4>Skills</h4>
-              <ul class="skills">
-                <li *ngFor="let s of extractedData.skills">
-                  <span class="skill-name">{{s.name}}</span>
-                  <span class="skill-status" *ngIf="!s.evaluated">Not Evaluated Yet</span>
-                  <span class="skill-score" *ngIf="s.evaluated">Score: {{s.score}}</span>
-                  <button *ngIf="!s.evaluated && !s.evaluating" (click)="startAssessment(s)">Start Professional Assessment</button>
-                  <span *ngIf="s.evaluating" class="evaluating">Assessing…</span>
-                </li>
-              </ul>
-            </div>
-
-          <div class="panel">
-            <h4>Certifications</h4>
-            <p>{{extractedData.certifications.join(', ')}}</p>
-          </div>
-
-          <div class="panel">
-            <h4>Education</h4>
-            <p>{{extractedData.education.join('; ')}}</p>
-          </div>
-
-          <div class="panel">
-            <h4>Languages</h4>
-            <p>{{extractedData.languages.join(', ')}}</p>
-          </div>
-        </div>
-      </div>
-
-    </section>
-  `,
-  styles: [
-    `.page { max-width: 900px; margin: 0 auto; }
-    .uploader { margin-top: 1rem; }
-    .dropzone { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 2rem; text-align: center; background: #fff; cursor: pointer; }
-    .dropzone.dragging { background: #eef2ff; border-color: #6366f1; }
-    .browse { color: #2563eb; text-decoration: underline; cursor: pointer; }
-    .browse input { display: none; }
-    .actions { margin-top: 0.6rem; }
-    button { padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer; }
-    .extract { margin-top: 0.8rem; font-style: italic; }
-    .result { margin-top: 1rem; }
-    .panel { margin-top: 0.6rem; padding: 0.8rem; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; }
-    `
-  ]
+  imports: [CommonModule, FormsModule],
+  templateUrl: './candidate-page.component.html',
+  styleUrls: ['./candidate-page.component.css']
 })
 export class CandidatePageComponent {
+  @ViewChild('previewVideo') previewVideo?: ElementRef<HTMLVideoElement>;
+
+  constructor(private router: Router) {}
+
+  setup = {
+    job: 'Production Manager',
+    industry: 'Seeds',
+    product: 'Hybrid Corn Seeds',
+    country: 'India',
+    companyType: 'AgriTech',
+    language: 'English'
+  };
+
+  jobOptions = ['Production Manager', 'Quality Manager', 'Operations Lead', 'Supply Chain Manager'];
+  industryOptions = ['Seeds', 'FMCG', 'Pharma', 'Automotive', 'Food'];
+  productOptions = ['Hybrid Corn Seeds', 'Organic Food', 'Pharma Supplies', 'EV Components'];
+  countryOptions = ['India', 'USA', 'UAE', 'Saudi Arabia', 'Egypt'];
+  companyTypeOptions = ['Startup', 'Corporate', 'Agritech', 'Manufacturing', 'Distribution'];
+  languageOptions = ['English', 'Arabic'];
+
+  interviewQuestions = [
+    { text: 'How would you improve OEE in a seed processing plant?' },
+    { text: 'What steps would you take to reduce downtime on a high-speed packaging line?' },
+    { text: 'How do you align production targets with quality standards in an FMCG operation?' }
+  ];
+
+  currentQuestionIndex = 0;
+  interviewStarted = false;
+  interviewFinished = false;
+  recording = false;
+  mediaStream: MediaStream | null = null;
+  mediaRecorder: MediaRecorder | null = null;
+  recordedChunks: Blob[] = [];
+  recordedUrl: string | null = null;
+  progress = 0;
+  timerInterval: any;
+
   isDragging = false;
   extracting = false;
   extractedData: any = null;
   fileName = '';
-  constructor(private router: Router) {}
+
+  get hasRecordingSupport() {
+    return typeof navigator !== 'undefined' && 'mediaDevices' in navigator && typeof (window as any).MediaRecorder !== 'undefined';
+  }
+
+  get currentQuestion() {
+    return this.interviewQuestions[this.currentQuestionIndex];
+  }
+
+  startInterview() {
+    this.interviewStarted = true;
+    this.interviewFinished = false;
+    this.currentQuestionIndex = 0;
+    this.recordedUrl = null;
+    this.progress = 0;
+    this.clearTimer();
+    this.startProgress();
+  }
+
+  resetInterview() {
+    this.interviewStarted = false;
+    this.interviewFinished = false;
+    this.currentQuestionIndex = 0;
+    this.recordedUrl = null;
+    this.stopRecording();
+    this.clearTimer();
+    this.progress = 0;
+  }
+
+  previousQuestion() {
+    if (this.currentQuestionIndex === 0) {
+      return;
+    }
+    this.currentQuestionIndex -= 1;
+    this.recordedUrl = null;
+    this.clearTimer();
+    this.startProgress();
+  }
+
+  nextQuestion() {
+    if (this.currentQuestionIndex >= this.interviewQuestions.length - 1) {
+      return;
+    }
+    this.currentQuestionIndex += 1;
+    this.recordedUrl = null;
+    this.clearTimer();
+    this.startProgress();
+  }
+
+  finishInterview() {
+    this.interviewFinished = true;
+    this.stopRecording();
+    this.clearTimer();
+  }
+
+  async toggleRecording() {
+    if (this.recording) {
+      this.stopRecording();
+    } else {
+      await this.startRecording();
+    }
+  }
+
+  async startRecording() {
+    if (!this.hasRecordingSupport) {
+      return;
+    }
+
+    try {
+      this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      if (this.previewVideo?.nativeElement) {
+        this.previewVideo.nativeElement.srcObject = this.mediaStream;
+      }
+
+      this.recordedChunks = [];
+      this.mediaRecorder = new MediaRecorder(this.mediaStream);
+      this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
+        if (event.data.size > 0) {
+          this.recordedChunks.push(event.data);
+        }
+      };
+      this.mediaRecorder.onstop = () => {
+        const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+        this.recordedUrl = URL.createObjectURL(blob);
+      };
+
+      this.mediaRecorder.start();
+      this.recording = true;
+    } catch (error) {
+      console.error('Recording failed', error);
+      this.recording = false;
+    }
+  }
+
+  stopRecording() {
+    if (this.mediaRecorder && this.recording) {
+      this.mediaRecorder.stop();
+    }
+    this.recording = false;
+
+    if (this.mediaStream) {
+      this.mediaStream.getTracks().forEach(track => track.stop());
+      this.mediaStream = null;
+    }
+
+    if (this.previewVideo?.nativeElement) {
+      this.previewVideo.nativeElement.srcObject = null;
+    }
+  }
+
+  startProgress() {
+    this.clearTimer();
+    this.progress = 0;
+    const duration = 15000;
+    const interval = 100;
+    const step = 100 / (duration / interval);
+
+    this.timerInterval = setInterval(() => {
+      this.progress = Math.min(100, Math.round(this.progress + step));
+      if (this.progress >= 100) {
+        this.clearTimer();
+      }
+    }, interval);
+  }
+
+  clearTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
 
   onDragOver(e: DragEvent) {
     e.preventDefault();
@@ -117,7 +214,6 @@ export class CandidatePageComponent {
 
   simulateExtraction(file: File) {
     this.extracting = true;
-    // Simulate async AI extraction with static sample data
     setTimeout(() => {
       this.extracting = false;
       this.extractedData = {
@@ -144,9 +240,12 @@ export class CandidatePageComponent {
     this.fileName = '';
     this.extractedData = null;
   }
-  
+
   startAssessment(skill: any) {
-    // Navigate to the assessments page and pass the skill name as a query param
     this.router.navigate(['/assessments'], { queryParams: { skill: skill.name } });
+  }
+
+  viewProfile() {
+    this.router.navigate(['/candidate/profile']);
   }
 }

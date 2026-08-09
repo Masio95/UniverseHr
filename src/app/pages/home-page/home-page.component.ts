@@ -29,7 +29,7 @@ import { RouterLink } from '@angular/router';
       </div>
 
       <div class="cards cards-actors">
-        <a class="card actor" routerLink="/candidate">
+        <a class="card actor" routerLink="/candidate/profile">
           <h3>Candidate</h3>
           <p>Upload CVs, extract skills and take assessments.</p>
         </a>
