@@ -1,0 +1,154 @@
+<section class="page">
+  <div class="hero">
+    <h2>Candidate AI Interview Room</h2>
+    <p>Customize your role, industry, product, country, company type and language — then try a 3-question AI interview teaser.</p>
+  </div>
+
+  <div class="interview-room">
+    <div class="panel setup-panel" *ngIf="!interviewStarted">
+      <h3>The Custom AI Interview Setup</h3>
+      <div class="form-grid">
+        <label>
+          Target job
+          <select [(ngModel)]="setup.job">
+            <option *ngFor="let option of jobOptions" [value]="option">{{ option }}</option>
+          </select>
+        </label>
+        <label>
+          Industry
+          <select [(ngModel)]="setup.industry">
+            <option *ngFor="let option of industryOptions" [value]="option">{{ option }}</option>
+          </select>
+        </label>
+        <label>
+          Product category
+          <select [(ngModel)]="setup.product">
+            <option *ngFor="let option of productOptions" [value]="option">{{ option }}</option>
+          </select>
+        </label>
+        <label>
+          Country
+          <select [(ngModel)]="setup.country">
+            <option *ngFor="let option of countryOptions" [value]="option">{{ option }}</option>
+          </select>
+        </label>
+        <label>
+          Company type
+          <select [(ngModel)]="setup.companyType">
+            <option *ngFor="let option of companyTypeOptions" [value]="option">{{ option }}</option>
+          </select>
+        </label>
+        <label>
+          Language
+          <select [(ngModel)]="setup.language">
+            <option *ngFor="let option of languageOptions" [value]="option">{{ option }}</option>
+          </select>
+        </label>
+      </div>
+
+      <button class="primary" (click)="startInterview()">Start 3-Question Teaser Interview</button>
+    </div>
+
+    <div class="panel teaser-panel" *ngIf="interviewStarted">
+      <div class="teaser-header">
+        <div>
+          <h3>Adaptive Interview Simulation</h3>
+          <p class="meta">{{ setup.job }} · {{ setup.industry }} · {{ setup.product }} · {{ setup.country }} · {{ setup.companyType }} · {{ setup.language }}</p>
+        </div>
+        <button class="ghost" (click)="resetInterview()">Back to setup</button>
+      </div>
+
+      <div class="question-card">
+        <span class="question-count">Question {{ currentQuestionIndex + 1 }} of {{ interviewQuestions.length }}</span>
+        <p class="question-text">{{ currentQuestion.text }}</p>
+
+        <div class="progress-bar" aria-hidden="true">
+          <div class="progress-fill" [style.width.%]="progress"></div>
+        </div>
+        <div class="progress-label">Progress: {{ progress }}%</div>
+      </div>
+
+      <div class="recorder-panel">
+        <div class="recording-info">
+          <button class="primary" (click)="toggleRecording()">
+            {{ recording ? 'Stop Recording' : 'Record Answer' }}
+          </button>
+          <p class="recording-text" *ngIf="recording">Recording... speak clearly and finish your answer for this prompt.</p>
+          <p class="recording-text" *ngIf="!recording && recordedUrl">Recorded answer ready for playback.</p>
+          <p class="recording-warning" *ngIf="!hasRecordingSupport">Your browser does not support the voice/video recording module.</p>
+        </div>
+
+        <div class="preview">
+          <video #previewVideo *ngIf="mediaStream" autoplay muted playsinline></video>
+          <audio *ngIf="recordedUrl && !recording" controls [src]="recordedUrl"></audio>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button (click)="previousQuestion()" [disabled]="currentQuestionIndex === 0">Previous</button>
+        <button (click)="nextQuestion()" [disabled]="currentQuestionIndex >= interviewQuestions.length - 1">Next</button>
+        <button class="secondary" (click)="finishInterview()">Finish Interview</button>
+      </div>
+
+      <div class="summary" *ngIf="interviewFinished">
+        <h4>Teaser complete</h4>
+        <p>Your mini-interview is complete. Use the recording to review your response and continue building your candidate profile.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="uploader">
+    <h3>Resume AI extractor</h3>
+    <p>Upload your CV to extract Job History, Skills, Certifications, Education and Languages.</p>
+    <div class="dropzone" [class.dragging]="isDragging"
+         (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+      <p *ngIf="!fileName">Drag & drop a PDF/DOCX here, or <label class="browse">browse<input type="file" accept=".pdf,.doc,.docx" (change)="onFileChange($event)"/></label></p>
+      <p *ngIf="fileName"><strong>Selected:</strong> {{ fileName }}</p>
+    </div>
+
+    <div class="actions">
+      <button (click)="clear()" [disabled]="!fileName">Clear</button>
+      <button class="secondary" (click)="viewProfile()">View Candidate Profile</button>
+    </div>
+
+    <div class="extract" *ngIf="extracting">Extracting data…</div>
+
+    <div class="result" *ngIf="extractedData">
+      <h3>Extracted data (simulated)</h3>
+      <div class="panel">
+        <h4>Job History</h4>
+        <ul>
+          <li *ngFor="let j of extractedData.jobHistory">{{ j.title }} — {{ j.company }} ({{ j.years }})</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h4>Skills</h4>
+        <ul class="skills">
+          <li *ngFor="let s of extractedData.skills">
+            <span class="skill-name">{{ s.name }}</span>
+            <span class="skill-status" *ngIf="!s.evaluated">Not Evaluated Yet</span>
+            <span class="skill-score" *ngIf="s.evaluated">Score: {{ s.score }}</span>
+            <button *ngIf="!s.evaluated && !s.evaluating" (click)="startAssessment(s)">Start Professional Assessment</button>
+            <span *ngIf="s.evaluating" class="evaluating">Assessing…</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h4>Certifications</h4>
+        <p>{{ extractedData.certifications.join(', ') }}</p>
+      </div>
+
+      <div class="panel">
+        <h4>Education</h4>
+        <p>{{ extractedData.education.join('; ') }}</p>
+      </div>
+
+      <div class="panel">
+        <h4>Languages</h4>
+        <p>{{ extractedData.languages.join(', ') }}</p>
+      </div>
+    </div>
+  </div>
+</section>
