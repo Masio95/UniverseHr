@@ -69,10 +69,8 @@ import { CommonModule } from '@angular/common';
         <h3>Executive delivery</h3>
         <p>Simulated report highlights areas recruiters care about: qualitative weakness mapping, training alignment, and the candidate’s readiness in key operational domains.</p>
         <div class="insights-grid">
-          <div class="insight-card">
-            <p class="small-label">Top Opportunity</p>
-            <strong>Financial Management</strong>
-            <p>Improve budgeting and margin forecasting for manufacturing operations.</p>
+          <div class="insight-card image-card">
+            <img src="assets/overallscore.png" alt="Overall assessment score">
           </div>
           <div class="insight-card">
             <p class="small-label">Hiring signal</p>
@@ -116,6 +114,8 @@ import { CommonModule } from '@angular/common';
     .insights { margin-top: 1.25rem; }
     .insights-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
     .insight-card { padding: 1.2rem; border-radius: 20px; background: #eff6ff; border: 1px solid #dbeafe; }
+    .image-card { padding: 0; overflow: hidden; }
+    .image-card img { display: block; width: 100%; height: auto; }
     .small-label { margin: 0 0 0.5rem; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
     .insight-card strong { display: block; margin: 0.35rem 0 0.55rem; font-size: 1.05rem; }
     .insight-card p { margin: 0; color: #475569; line-height: 1.5; }

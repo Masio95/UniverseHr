@@ -51,6 +51,11 @@ import { Router, RouterLink } from '@angular/router';
             </li>
           </ul>
         </section>
+
+        <section class="card profile-summary-card">
+          <h3>Profile summary</h3>
+          <img src="assets/profileSummary.png" alt="Candidate profile summary">
+        </section>
       </div>
 
       <section class="card skills-card">
@@ -59,17 +64,12 @@ import { Router, RouterLink } from '@angular/router';
             <h3>Parsed skills</h3>
             <p>Any skill can be selected to see its current level and recommended next step.</p>
           </div>
-          <p class="skill-count">{{ parsedSkills.length }} skills parsed</p>
+          <p class="skill-count">{{ 8 }} skills parsed</p>
         </div>
 
         <div class="skills-list">
-          <button *ngFor="let skill of parsedSkills" class="skill-item" [class.selected]="skill.name === selectedSkill.name" (click)="selectSkill(skill)">
-            <div>
-              <strong>{{ skill.name }}</strong>
-              <p>{{ skill.levelLabel }}</p>
-            </div>
-            <span>{{ skill.score }}%</span>
-          </button>
+          <img class="parsed-skills-image" src="assets/ParsedSkilled.png" alt="Parsed skills overview">
+
         </div>
 
         <div class="skill-detail" *ngIf="selectedSkill.name">
@@ -96,7 +96,7 @@ import { Router, RouterLink } from '@angular/router';
     h2 { margin: 0; font-size: clamp(2rem, 2.4vw, 2.4rem); }
     .profile-hero p { margin: 0; color: #475569; max-width: 620px; }
     .back-link { color: #2563eb; text-decoration: none; font-weight: 600; border: 1px solid #c7d2fe; padding: 0.75rem 1rem; border-radius: 999px; background: #eff6ff; }
-    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
+    .profile-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem; }
     .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; padding: 1.5rem; box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05); }
     .summary-card dl { display: grid; gap: 1rem; margin: 1rem 0 0; }
     dt { font-size: 0.9rem; color: #64748b; }
@@ -106,9 +106,11 @@ import { Router, RouterLink } from '@angular/router';
     .score-note { margin: 0 0 1rem; color: #475569; }
     .score-card ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
     .score-card li { display: flex; justify-content: space-between; padding: 0.85rem 1rem; border-radius: 16px; border: 1px solid #e2e8f0; background: #f8fafc; }
+    .profile-summary-card img { display: block; width: 100%; height: auto; margin-top: 1rem; border-radius: 16px; }
     .skills-card .section-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
     .skill-count { margin: 0; color: #64748b; }
     .skills-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.85rem; margin: 1rem 0; }
+    .parsed-skills-image { display: block; width: 100%; height: auto; border-radius: 18px; border: 1px solid #dbeafe; grid-column: 1 / -1; }
     .skill-item { width: 100%; text-align: left; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 18px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease; }
     .skill-item:hover { transform: translateY(-1px); border-color: #2563eb; }
     .skill-item.selected { border-color: #2563eb; background: #eff6ff; }
@@ -119,8 +121,7 @@ import { Router, RouterLink } from '@angular/router';
     .detail-row div { padding: 1rem; border-radius: 18px; background: white; border: 1px solid #e2e8f0; }
     .detail-row span { color: #64748b; font-size: 0.88rem; }
     .detail-row strong { display: block; margin-top: 0.45rem; font-size: 1rem; }
-    @media (max-width: 800px) { .profile-grid { grid-template-columns: 1fr; } }
-    `
+    @media (max-width: 800px) { .profile-grid { grid-template-columns: 1fr; } }    `
   ]
 })
 export class CandidateProfileComponent {
@@ -191,7 +192,7 @@ export class CandidateProfileComponent {
 
   assessmentSkills = [
     { name: 'Leadership', value: 90 },
-    { name: 'Planning', value: 85 },
+    { name: 'Behavioral', value: 85 },
     { name: 'Technical', value: 80 }
   ];
 
